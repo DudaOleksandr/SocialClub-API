@@ -9,8 +9,8 @@ LOGIN_URL = "https://signin.rockstargames.com/api/login/socialclub"
 CSRF_URL = "https://socialclub.rockstargames.com"
 MEMBERS_URL = "https://socialclub.rockstargames.com/members"
 
-COOKIES_FILE = "Storage/Cookies.pkl"
-TOKEN_FILE = "Storage/Token.json"
+COOKIES_FILE = "Cookies.pkl"
+TOKEN_FILE = "Token.json"
 
 # Will only be useful for first login.
 # After that, the session will be saved and re-used at startup.
