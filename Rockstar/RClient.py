@@ -1,9 +1,8 @@
-from requests import Session, get, post
+from requests import Session
 from pickle import load as pickle_load, dump as pickle_dump
 from json import load as json_load, dump as json_dump
 from bs4 import BeautifulSoup
-from datetime import datetime, timezone, timedelta
-from time import time
+from datetime import datetime
 
 LOGIN_URL = "https://signin.rockstargames.com/api/login/socialclub"
 CSRF_URL = "https://socialclub.rockstargames.com"
@@ -15,6 +14,7 @@ TOKEN_FILE = "Token.json"
 # Will only be useful for first login.
 # After that, the session will be saved and re-used at startup.
 CASTLE_TOKEN = "wMnxlLT2mbqy8ZeGuriyioOo95e6jZq6mfGyiLChkLWkjonCezeWP-OdiXx0JKzaKINKD79n-uQ6dCy0vmwxo70SWqnvQLu3usc0x5J_BLuBbXZDuygzyuCuluC6FaK1tzg9t8AAMNjyCEve0wtQmIpJAZeXMFjZ2whGxJ8pZZeOVx-HhEdm3tFRBYyfHweDlkdwx88LVODaBXrey0gEhIhJAoGfT3r_6yp9m58LWNzaR3bS3Axenp8kWcXQClSYjlUHmY9JAZmPR2LW2QZD3pBSAoCRVAfbt1YAhd5WA4aPEDKwNGelv9teCIWJV1KDIzBw-fgrdJeXKWf--y5wm58pZ_77LnCX-AJ32M0EVJftM2mXjFcGh58zWJeXV0mHj1cBhYtfA56fI1jF2gRFhPtWAJfJFG6C4FcRx8w4BOiPSxHzjCMAhpbDJYeOSQGGkVYIgI9LEYeMXQGHhVcBGLdnhJZ61jV8v7Qwai1D1rdUZMbqesyEP0DFWzu8Zz28-hJD2M8CHvzWAkejqBJam8oMHOL-S1TZkjJim9oJHdPaS0PCiuap4LtpVOfQbjG0MGo2tS74NBz9tncYCXZ8xQtlRNz_Z5G3v2cxt79nMbe_ZzG3v2cxt79niMUGFXG3_ycxt79ncff_J3H37Gdit-ksiA4E3GO3ejdhjb9nMbe_ZzC3QMg"
+
 
 class RockstarClient:
     """
@@ -47,7 +47,7 @@ class RockstarClient:
         self.rvt = None
         self.session = Session()
 
-    def Log(self, message):
+    def log(self, message):
         """
         Log messages if silent mode is not enabled.
 
@@ -57,7 +57,7 @@ class RockstarClient:
         if not self.silent:
             print(message)
 
-    def SaveSession(self, filename):
+    def save_session(self, filename):
         """
         Save the current session cookies to a pickle file.
 
@@ -67,7 +67,7 @@ class RockstarClient:
         with open(filename, 'wb') as f:
             pickle_dump(self.session.cookies, f)
 
-    def LoadSession(self, filename):
+    def load_session(self, filename):
         """
         Load session cookies from a pickle file into the current session.
 
@@ -84,7 +84,7 @@ class RockstarClient:
         except FileNotFoundError:
             return False
 
-    def ResumeSession(self):
+    def resume_session(self):
         """
         Attempt to resume a session by making a request to the members URL.
 
@@ -93,13 +93,13 @@ class RockstarClient:
         """
         response = self.session.get(MEMBERS_URL)
         if response.status_code == 200:
-            self.Log("Session resumed successfully")
+            self.log("Session resumed successfully")
             return True
         else:
-            self.Log("Session expired or failed to resume")
+            self.log("Session expired or failed to resume")
             return False
 
-    def SaveTokenData(self):
+    def save_token_data(self):
         """
         Save bearer token and its expiry time to a JSON file.
         """
@@ -109,9 +109,9 @@ class RockstarClient:
                 'token_expiry_time': self.token_expiry_time if self.token_expiry_time else None
             }
             json_dump(token_data, f)
-            self.Log("Token data saved successfully.")
+            self.log("Token data saved successfully.")
 
-    def LoadTokenData(self):
+    def load_token_data(self):
         """
         Load bearer token and its expiry time from a JSON file.
         """
@@ -120,12 +120,19 @@ class RockstarClient:
                 token_data = json_load(f)
                 self.bearer_token = token_data.get('bearer_token')
                 self.token_expiry_time = token_data['token_expiry_time'] if 'token_expiry_time' in token_data else None
-                self.Log("Token data loaded successfully.")
+                self.log("Token data loaded successfully.")
 
         except FileNotFoundError:
-            self.Log("Token data file not found.")
+            self.log("Token data file not found.")
 
-    def GetCookiesForHeader(self):
+    def get_token(self):
+        if self.is_token_expired():
+            self.refresh_token()
+            return self.bearer_token
+        else:
+            return self.bearer_token
+
+    def get_cookies_for_header(self):
         """
         Get cookies from the session and format them into a header string.
 
@@ -136,7 +143,7 @@ class RockstarClient:
         cookie_header = "; ".join([f"{key}={value}" for key, value in cookie_dict.items()])
         return cookie_header
 
-    def FetchCSRFToken(self):
+    def fetch_csrf_token(self):
         """
         Fetch CSRF token from the Social Club website.
 
@@ -156,9 +163,9 @@ class RockstarClient:
                 return csrf_token_elem.get("value")
         return None
 
-    def RefreshToken(self):
+    def refresh_token(self):
         """
-        Refresh the bearer token using a multi-step process.
+        Refresh the bearer token using a multistep process.
 
         Part I: Make a POST request to a specific endpoint to get a refresh code.
         Part II: Use the refresh code to obtain the new bearer token and its expiry time.
@@ -167,7 +174,7 @@ class RockstarClient:
         url = "https://signin.rockstargames.com/connect/cors/check/rsg"
         headers = {
             "Accept": "*/*",
-            "Cookie": self.GetCookiesForHeader(),
+            "Cookie": self.get_cookies_for_header(),
             "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
             "Host": "signin.rockstargames.com",
             "Origin": "https://www.rockstargames.com",
@@ -176,16 +183,20 @@ class RockstarClient:
             "X-Requested-With": "XMLHttpRequest"
         }
 
-        data = {"fingerprint":"{\"fp\":{\"user_agent\":\"a36e69effb1fe461bbc19c3ebfecce75\",\"language\":\"fr-FR\",\"pixel_ratio\":1,\"timezone_offset\":-120,\"session_storage\":1,\"local_storage\":1,\"indexed_db\":1,\"open_database\":0,\"cpu_class\":\"unknown\",\"navigator_platform\":\"Win32\",\"do_not_track\":\"unknown\",\"regular_plugins\":\"9aba0104cb3ef4a2f279e49dd0781262\",\"canvas\":\"c663e0153ef98a07ed0eab33f19ea289\",\"webgl\":\"434a31bb3916375f4dd767d526e919b7\",\"adblock\":false,\"has_lied_os\":true,\"touch_support\":\"0;false;false\",\"device_name\":\"Chrome on Windows\",\"js_fonts\":\"c38ffa4be84b2a39c33ff510e42e6c4f\"}}","returnUrl":"/rockstar-games-launcher","linkInfo":{"shouldLink":'false',"service":'null',"username":'null',"serviceVisibility":'null'},"events":[{"eventName":"Sign In Form","eventType":"page-view"}]}
+        data = {
+            "fingerprint": "{\"fp\":{\"user_agent\":\"a36e69effb1fe461bbc19c3ebfecce75\",\"language\":\"fr-FR\",\"pixel_ratio\":1,\"timezone_offset\":-120,\"session_storage\":1,\"local_storage\":1,\"indexed_db\":1,\"open_database\":0,\"cpu_class\":\"unknown\",\"navigator_platform\":\"Win32\",\"do_not_track\":\"unknown\",\"regular_plugins\":\"9aba0104cb3ef4a2f279e49dd0781262\",\"canvas\":\"c663e0153ef98a07ed0eab33f19ea289\",\"webgl\":\"434a31bb3916375f4dd767d526e919b7\",\"adblock\":false,\"has_lied_os\":true,\"touch_support\":\"0;false;false\",\"device_name\":\"Chrome on Windows\",\"js_fonts\":\"c38ffa4be84b2a39c33ff510e42e6c4f\"}}",
+            "returnUrl": "/rockstar-games-launcher",
+            "linkInfo": {"shouldLink": 'false', "service": 'null', "username": 'null', "serviceVisibility": 'null'},
+            "events": [{"eventName": "Sign In Form", "eventType": "page-view"}]}
         refresh_resp = self.session.post(url, data=data, headers=headers)
         refresh_code = refresh_resp.text[1:-1]
-        self.Log(f"Refresh Code : {refresh_code}")
+        self.log(f"Refresh Code : {refresh_code}")
 
         # Part II - Collecting the Bearer Token
         url = f"https://www.rockstargames.com/auth/gateway.json?code={refresh_code}"
         headers = {
             "Accept": "*/*",
-            "Cookie": self.GetCookiesForHeader(),
+            "Cookie": self.get_cookies_for_header(),
             "Content-type": "application/json",
             "Referer": "https://www.rockstargames.com/",
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
@@ -195,14 +206,14 @@ class RockstarClient:
         bearer_token = final_request.json()['bearerToken']
         bearer_expiration = final_request.json()['tokenExpiresTime']
 
-        self.Log(f"Bearer Token : {bearer_token}")
-        self.Log(f"Expiration Time : {bearer_expiration}")
+        self.log(f"Bearer Token : {bearer_token}")
+        self.log(f"Expiration Time : {bearer_expiration}")
 
         self.bearer_token = bearer_token
         self.token_expiry_time = bearer_expiration
-        self.SaveTokenData()
+        self.save_token_data()
 
-    def IsTokenExpired(self):
+    def is_token_expired(self):
         """
         Check if the bearer token is expired.
 
@@ -222,106 +233,10 @@ class RockstarClient:
                 else:
                     return max(1, time_diff)
         else:
-            self.Log("No token expiry time set. Token considered expired.")
+            self.log("No token expiry time set. Token considered expired.")
             return True
 
-    def RetrieveRID(self, username):
-        """
-        Retrieve Rockstar ID (RID) and avatar URL for a given username.
-
-        Args:
-            username (str): Username for which RID and avatar URL are to be retrieved.
-
-        Returns:
-            tuple: Tuple containing (rid, avatar_url) if successful, ("RID not found", "") if RID is not found,
-                   or (error_message, "") if an error occurs during the request.
-            int: 1 if RID and avatar URL are found, 0 otherwise.
-        """
-
-        current_time = datetime.utcnow().timestamp() + 3600 * 2
-        expiration_time = self.token_expiry_time
-
-        if self.IsTokenExpired() == True:
-            self.Log("Token has expired. Refreshing...")
-            self.RefreshToken()
-        
-        headers = {
-            'Authorization': f'Bearer {self.bearer_token}',
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip, deflate, br, zstd',
-            'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Connection': 'keep-alive',
-            'Host': 'scapi.rockstargames.com',
-            'Origin': 'https://socialclub.rockstargames.com',
-            'Referer': 'https://socialclub.rockstargames.com/',
-            'Sec-Ch-Ua': '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
-            'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Ch-Ua-Platform': '"Windows"',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-site',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-
-        url = f"https://scapi.rockstargames.com/profile/getprofile?nickname={username}&maxFriends=3"
-        response = get(url, headers=headers)
-
-        if response.status_code == 200:
-            data = response.json()
-            if data["status"] and "accounts" in data and len(data["accounts"]) > 0:
-                rid = data["accounts"][0]["rockstarAccount"]["rockstarId"]
-                avatar_url = data["accounts"][0]["rockstarAccount"]["avatarUrl"]
-                return (rid, avatar_url), 1
-            else:
-                return ("RID not found", ""), 0
-        else:
-            return (f"Error during the request: {response.status_code}", ""), 0
-
-    def GetJobsByUsername(self, username):
-        """
-        Retrieve jobs created by a specific user.
-
-        Args:
-            username (str): Username for which jobs are to be retrieved.
-
-        Returns:
-            dict: JSON response containing job data if successful,
-                  or error message if an error occurs during the request.
-        """
-        # Ensure the token is not expired
-        if self.IsTokenExpired():
-            self.Log("Token has expired. Refreshing...")
-            self.RefreshToken()
-
-        # Retrieve the user's Rockstar ID
-        rid_data, status = self.RetrieveRID(username)
-        if status == 0:
-            self.Log(f"Error: {rid_data[0]}")
-            return {"error": rid_data[0]}
-
-        rid = rid_data[0]
-
-        # Construct headers and URL for the jobs request
-        headers = {
-            'X-AMC': 'true',
-            'Referer': 'https://socialclub.rockstargames.com/',
-            'X-Requested-With': 'XMLHttpRequest',
-            'Authorization': f'Bearer {self.bearer_token}',
-            'baggage': 'sentry-environment=prod,sentry-release=2024-07-15dic_prod.sc,sentry-public_key=9c63ab4e6cf94378a829ec7518e1eaf6,sentry-trace_id=cb75881c68684d89b8812b85a07ee572',
-            'sentry-trace': 'cb75881c68684d89b8812b85a07ee572-a31057600fd3ef13'
-        }
-
-        url = f'https://scapi.rockstargames.com/search/mission?dateRangeCreated=any&sort=likes&platform=pc&title=gtav&creatorRockstarId={rid}&pageSize=15'
-
-        response = self.session.get(url, headers=headers)
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return {"error": f"Error during the request: {response.status_code}"}
-
-    def Authenticate(self):
+    def authenticate(self):
         """
         Authenticate the client by logging into the Rockstar Games Social Club API.
 
@@ -331,7 +246,7 @@ class RockstarClient:
         headers = {
             "Accept": "*/*",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Cookie": self.GetCookiesForHeader(),
+            "Cookie": self.get_cookies_for_header(),
             "Origin": "https://signin.rockstargames.com",
             "Referer": "https://signin.rockstargames.com/signin/user-form?cid=rsg",
             "Content-Type": "application/json",
@@ -347,7 +262,7 @@ class RockstarClient:
             "email": self.email,
             "password": self.password,
             "keepMeSignedIn": False,
-            "fingerprint":"{\"fp\":{\"user_agent\":\"a36e69effb1fe461bbc19c3ebfecce75\",\"language\":\"fr-FR\",\"pixel_ratio\":1,\"timezone_offset\":-120,\"session_storage\":1,\"local_storage\":1,\"indexed_db\":1,\"open_database\":0,\"cpu_class\":\"unknown\",\"navigator_platform\":\"Win32\",\"do_not_track\":\"unknown\",\"regular_plugins\":\"9aba0104cb3ef4a2f279e49dd0781262\",\"canvas\":\"c663e0153ef98a07ed0eab33f19ea289\",\"webgl\":\"434a31bb3916375f4dd767d526e919b7\",\"adblock\":false,\"has_lied_os\":true,\"touch_support\":\"0;false;false\",\"device_name\":\"Chrome on Windows\",\"js_fonts\":\"c38ffa4be84b2a39c33ff510e42e6c4f\"}}",
+            "fingerprint": "{\"fp\":{\"user_agent\":\"a36e69effb1fe461bbc19c3ebfecce75\",\"language\":\"fr-FR\",\"pixel_ratio\":1,\"timezone_offset\":-120,\"session_storage\":1,\"local_storage\":1,\"indexed_db\":1,\"open_database\":0,\"cpu_class\":\"unknown\",\"navigator_platform\":\"Win32\",\"do_not_track\":\"unknown\",\"regular_plugins\":\"9aba0104cb3ef4a2f279e49dd0781262\",\"canvas\":\"c663e0153ef98a07ed0eab33f19ea289\",\"webgl\":\"434a31bb3916375f4dd767d526e919b7\",\"adblock\":false,\"has_lied_os\":true,\"touch_support\":\"0;false;false\",\"device_name\":\"Chrome on Windows\",\"js_fonts\":\"c38ffa4be84b2a39c33ff510e42e6c4f\"}}",
             "returnUrl": "/rockstar-games-launcher",
             "linkInfo": {"shouldLink": False, "service": None, "username": None, "serviceVisibility": None},
             "events": [{"eventName": "Sign In Form", "eventType": "page-view"}]
@@ -357,20 +272,20 @@ class RockstarClient:
 
         if response.status_code == 200:
             if "An error occurred while processing your request." in response.text:
-                self.Log(f"Please manually provide a Castle Token for first login.")
+                self.log(f"Please manually provide a Castle Token for first login.")
                 exit(1)
 
-            self.Log(f"Logged in !")
-            self.SaveSession(COOKIES_FILE)
-        elif "Sorry, we are unable to handle your request at this time." in response.text: 
-                self.Log(f"Please manually provide a Castle Token for first login.")
-                exit(1)
+            self.log(f"Logged in !")
+            self.save_session(COOKIES_FILE)
+        elif "Sorry, we are unable to handle your request at this time." in response.text:
+            self.log(f"Please manually provide a Castle Token for first login.")
+            exit(1)
         else:
-            self.Log(f"Login failed - {response.status_code}")
-            self.Log(response.text)
+            self.log(f"Login failed - {response.status_code}")
+            self.log(response.text)
             exit(1)
 
-    def Startup(self, force_renewing=False):
+    def startup(self, force_renewing=False):
         """
         Initialize the client session by attempting to load session cookies and token data,
         or authenticate if no session data is found or if forced to renew.
@@ -383,17 +298,17 @@ class RockstarClient:
         If no session data is found or `force_renewing` is True,
         attempt to fetch CSRF token and authenticate the client.
         """
-        if self.LoadSession(COOKIES_FILE) and not force_renewing:
-            self.Log("Session loaded successfully")
-            self.LoadTokenData()
+        if self.load_session(COOKIES_FILE) and not force_renewing:
+            self.log("Session loaded successfully")
+            self.load_token_data()
         else:
-            self.Log("No session cookies found, authenticating...")
-            csrf_token = self.FetchCSRFToken()
+            self.log("No session cookies found, authenticating...")
+            csrf_token = self.fetch_csrf_token()
             self.rvt = csrf_token
             if not csrf_token:
-                self.Log("Error: CSRF Token not found")
+                self.log("Error: CSRF Token not found")
                 exit()
             else:
-                self.Log(f"CSRF Found : {csrf_token}")
+                self.log(f"CSRF Found : {csrf_token}")
 
-            self.Authenticate()
+            self.authenticate()
