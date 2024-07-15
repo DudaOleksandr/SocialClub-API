@@ -1,10 +1,15 @@
+import os
+from dotenv import load_dotenv
 from Rockstar.RID import RockstarClient
 
+load_dotenv()
+
 # Constants
-EMAIL = "EMAIL"
-PASSWORD = "PASSWORD"
+EMAIL = os.environ['EMAIL']
+PASSWORD = os.environ['PASSWORD']
+SILENT = os.environ['SILENT']
+
 TARGET = "TARGET"
-SILENT = False
 
 # Main script to retrieve RID and avatar URL
 client = RockstarClient(EMAIL, PASSWORD, SILENT)
