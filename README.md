@@ -1,5 +1,8 @@
 # Social Club API Scraper
 
+## Fork from
+- GitHub: [SocialClub-API](https://github.com/Alex-MHR/SocialClub-API)
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
@@ -40,9 +43,9 @@ Here's a basic example of how to use the scraper :
 from Rockstar.RID import RockstarClient
 
 # Constants
-EMAIL = "EMAIL"
-PASSWORD = "PASSWORD"
-TARGET = "TARGET"
+EMAIL = os.environ['EMAIL']
+PASSWORD = os.environ['PASSWORD']
+TARGET = "TARGET" # The username of the player whose RID you want
 SILENT = False
 
 # Main script to retrieve RID and avatar URL
@@ -58,13 +61,12 @@ else:
 ```
 
 ## Configuration
-You can configure the scraper by modifying the `Constants` at the beginning of the file. Here are the available configuration options :
+You can configure the scraper by creating env file. Here is configuration structure :
 
 ```python
-EMAIL = "my-email@my-host.com" # Your SocialClub E-Mail
-PASSWORD = "MyStrongPassword" # Your SocialClub Password
-TARGET = "Username" # The username of the player whose RID you want
-SILENT = False # Mostly for Debug
+EMAIL="my-email@my-host.com" # Your SocialClub E-Mail
+PASSWORD="MyStrongPassword" # Your SocialClub Password
+SILENT=0 # Mostly for Debug; 0 for False, 1 for True
 ```
 
 ## Contributing
