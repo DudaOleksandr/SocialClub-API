@@ -7,7 +7,7 @@ load_dotenv()
 # Constants
 EMAIL = os.environ['EMAIL']
 PASSWORD = os.environ['PASSWORD']
-SILENT = os.environ['SILENT']
+SILENT = bool(int(os.environ['SILENT']))
 
 TARGET = "TARGET"
 

@@ -66,7 +66,7 @@ You can configure the scraper by creating env file. Here is configuration struct
 ```python
 EMAIL="my-email@my-host.com" # Your SocialClub E-Mail
 PASSWORD="MyStrongPassword" # Your SocialClub Password
-SILENT=False # Mostly for Debug
+SILENT=0 # Mostly for Debug; 0 for False, 1 for True
 ```
 
 ## Contributing
