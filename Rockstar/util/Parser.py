@@ -1,4 +1,4 @@
-from model.Job import Job
+from Rockstar.model.Job import Job
 
 
 class Parser:
