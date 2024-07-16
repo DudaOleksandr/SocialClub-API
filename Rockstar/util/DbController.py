@@ -11,7 +11,7 @@ class DbController:
             }
                                               )
         else:
-            return db_user[0]
+            return db_user
 
     def add_jobs_list(self, job_list, db_user):
         for job in job_list:

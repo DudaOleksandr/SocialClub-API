@@ -21,7 +21,7 @@ db_client = DbClient()
 (rid, avatar_url), state = User.retrieve_rid(TARGET, client.get_token())
 job_list = Jobs.get_jobs_by_username(TARGET, client.get_token())
 user = User.retrieve_user_from_token(client.get_token())
-db_user = db_client.get_filter_table('users', 'rockstarId', user.get('nameId'))
+db_user = db_client.get_filter_table('users', 'rockstarId', user.get('nameId'))[0]
 if state == 1:
     print(f"RID of player {TARGET} is {rid}.\nAvatar URL : {avatar_url}")
     print(f"Jobs of player {TARGET} are {job_list}.")
