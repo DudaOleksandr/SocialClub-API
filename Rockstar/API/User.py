@@ -1,4 +1,6 @@
+import jwt
 from requests import get
+
 
 def retrieve_rid(username, token):
     """
@@ -46,3 +48,13 @@ def retrieve_rid(username, token):
             return ("RID not found", ""), 0
     else:
         return (f"Error during the request: {response.status_code}", ""), 0
+
+
+def retrieve_user_from_token(token):
+    payload = jwt.decode(token, options={"verify_signature": False})
+
+    result = {
+        'nameId': payload.get('nameid'),
+        'nickname': payload.get('scAuth.Nickname')
+    }
+    return result
