@@ -1,6 +1,8 @@
 from .User import retrieve_rid
 from requests import get
 
+from ..util.Parser import parseJobs
+
 
 def get_jobs_by_username(username, token, number_of_jobs=30):
     """
@@ -36,8 +38,19 @@ def get_jobs_by_username(username, token, number_of_jobs=30):
     url = f'https://scapi.rockstargames.com/search/mission?dateRangeCreated=any&sort=likes&platform=pc&title=gtav&creatorRockstarId={rid}&pageSize={number_of_jobs}'
 
     response = get(url, headers=headers)
-
+    index = 1
+    jobs_list = parseJobs(response.json())
+    while response.json()['hasMore']:
+        url = f'https://scapi.rockstargames.com/search/mission?dateRangeCreated=any&sort=likes&platform=pc&title=gtav&pageIndex={index}&creatorRockstarId={rid}&pageSize={number_of_jobs}'
+        response = get(url, headers=headers)
+        jobs_list.extend(parseJobs(response.json()))
+        index += 1
+        if not response.json()['hasMore']:
+            url = f'https://scapi.rockstargames.com/search/mission?dateRangeCreated=any&sort=likes&platform=pc&title=gtav&pageIndex={index}&creatorRockstarId={rid}&pageSize={number_of_jobs}'
+            response = get(url, headers=headers)
+            jobs_list.extend(parseJobs(response.json()))
+            break
     if response.status_code == 200:
-        return response.json()
+        return jobs_list
     else:
         return {"error": f"Error during the request: {response.status_code}"}
