@@ -14,13 +14,14 @@ key = os.environ['DB_KEY']
 EMAIL = os.environ['EMAIL']
 PASSWORD = os.environ['PASSWORD']
 SILENT = bool(int(os.environ['SILENT']))
-TARGET = "TARGET"
+TARGET = "O_D_I_U_M"
 
 db = create_client(url, key)
 client = RockstarClient(EMAIL, PASSWORD, SILENT)
 client.startup(force_renewing=False)
 (rid, avatar_url), state = User.retrieve_rid(TARGET, client.get_token())
 jobs = Jobs.get_jobs_by_username(TARGET, client.get_token())
+user = User.retrieve_user_from_creds(client.get_token())
 job_list = parseJobs(jobs)
 if state == 1:
     print(f"RID of player {TARGET} is {rid}.\nAvatar URL : {avatar_url}")

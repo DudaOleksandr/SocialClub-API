@@ -46,3 +46,29 @@ def retrieve_rid(username, token):
             return ("RID not found", ""), 0
     else:
         return (f"Error during the request: {response.status_code}", ""), 0
+
+def retrieve_user_from_creds(token):
+
+    headers = {
+        "accept": "*/*",
+        "accept-language": "uk,uk-UA;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,ru;q=0.5",
+        "authorization": f'Bearer {token}',
+        "content-type": "application/json",
+        "priority": "u=1, i",
+        'Sec-Ch-Ua': '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site',
+    }
+
+    url = "https://graph.rockstargames.com/?origin=https://socialclub.rockstargames.com&operationName=userData&variables=%7B%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22074459b15e5c168dd6e9e0b9024ad04fa9804f08ec93e8774707e0695c9e883e%22%7D%7D"
+
+    response = get(url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        return (f"Error during the request: {response.status_code}", ""), 0
