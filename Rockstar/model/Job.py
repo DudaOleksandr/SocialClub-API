@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 
-@dataclass(init=False)
 class Job:
+    jobId: str
     name: str
     desc: str
     url: str
