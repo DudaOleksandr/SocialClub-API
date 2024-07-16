@@ -1,4 +1,5 @@
 def getCreatorsDict():
+
     return {
         "__-XyJluGaH-__": 218888420,
         "_nice4ka_": 120133800,
@@ -18,3 +19,5 @@ def getCreatorsDict():
         "__-Kasper-__": 91981613,
         "racesmurf123": 174938475
     }
+
+    return a
