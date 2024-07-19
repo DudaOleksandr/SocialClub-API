@@ -38,7 +38,7 @@ class DbController:
 
             db_user_job = self.db_client.get_filter_table('userJobs', 'jobId', db_job.get('id'))
 
-            if not db_user_job:
+            if not db_user_job or db_user_job[0].get('userId') != db_user.get('id'):
                 db_user_job = self.db_client.insert_data('userJobs', {
                     'userId': db_user.get('id'),
                     'jobId': db_job.get('id'),

@@ -13,7 +13,7 @@ def parseJobs(jsonResponse):
         job_details.jobId = item['id']
         job_details.url = "https://socialclub.rockstargames.com/job/gtav/" + item['id']
         job_details.authorId = item['userId']
-        job_details.percentage = int(item['likeCount'] / (item['likeCount'] + item['dislikeCount']))
+        job_details.percentage = round(item['likeCount'] / (item['likeCount'] + item['dislikeCount']) * 100)
         job_details.type = item['type']
         job_details.bookmarked = item['bookmarked']
         job_details.played = item['played']
