@@ -6,6 +6,7 @@ class Job:
     name: str
     desc: str
     url: str
+    imgSrc: str
     authorId: int
     percentage: int
     type: str

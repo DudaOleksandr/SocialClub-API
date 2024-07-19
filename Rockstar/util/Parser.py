@@ -17,6 +17,7 @@ def parseJobs(jsonResponse):
         job_details.type = item['type']
         job_details.bookmarked = item['bookmarked']
         job_details.played = item['played']
+        job_details.imgSrc = item['imgSrc']
 
         jobs_list.append(json.loads(json.dumps(job_details.__dict__)))
         print(job_details.__dict__)

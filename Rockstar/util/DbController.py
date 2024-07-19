@@ -8,8 +8,7 @@ class DbController:
             return self.db_client.insert_data('users', {
                 'rockstarId': user.get('nameId'),
                 'rockstarName': user.get('nickname')
-            }
-                                              )
+            })
         else:
             return db_user
 
@@ -26,7 +25,8 @@ class DbController:
                     'url': job.get('url'),
                     'percentage': job.get('percentage'),
                     'type': job.get('type'),
-                    'authorId': job.get('authorId')
+                    'authorId': job.get('authorId'),
+                    'imgSrc': job.get('imgSrc')
                 })[0]
             else:
                 db_job = db_job[0]
@@ -34,9 +34,11 @@ class DbController:
                 if db_job.get('percentage') != job.get('percentage'):
                     db_job = self.db_client.update_data('jobs', {
                         'percentage': job.get('percentage')
-                    }, 'jobId', job.get('jobId'))
+                    }, 'jobId', job.get('jobId'))[0]
 
             db_user_job = self.db_client.get_filter_table('userJobs', 'jobId', db_job.get('id'))
+
+            #TODO Fix duplicates db_user_job[0] can return 2 userJobs and we need to check both
 
             if not db_user_job or db_user_job[0].get('userId') != db_user.get('id'):
                 db_user_job = self.db_client.insert_data('userJobs', {
