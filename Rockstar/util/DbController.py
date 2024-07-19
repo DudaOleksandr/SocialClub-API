@@ -38,9 +38,9 @@ class DbController:
 
             db_user_job = self.db_client.get_filter_table('userJobs', 'jobId', db_job.get('id'))
 
-            #TODO Fix duplicates db_user_job[0] can return 2 userJobs and we need to check both
+            is_db_user_job_added = db_user.get('id') in [j.get('userId') for j in db_user_job]
 
-            if not db_user_job or db_user_job[0].get('userId') != db_user.get('id'):
+            if not db_user_job and not is_db_user_job_added:
                 db_user_job = self.db_client.insert_data('userJobs', {
                     'userId': db_user.get('id'),
                     'jobId': db_job.get('id'),
