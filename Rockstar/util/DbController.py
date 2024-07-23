@@ -12,12 +12,17 @@ class DbController:
         else:
             return db_user
 
+    # TODO fix intermittent
+    # str has no attribute get and / or
+    # Server disconnected without response
+
     def add_jobs_list(self, job_list, db_user):
         for job in job_list:
-
+            # print(job)
             db_job = self.db_client.get_filter_table('jobs', 'jobId', job.get('jobId'))
 
             if not db_job:
+
                 db_job = self.db_client.insert_data('jobs', {
                     'jobId': job.get('jobId'),
                     'name': job.get('name'),
