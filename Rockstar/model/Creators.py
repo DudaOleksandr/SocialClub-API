@@ -1,6 +1,7 @@
 def getCreatorsDict():
-
     return {
+        "O_D_I_U_M": 157779789,
+        "Kurwocka": 151495385,
         "__-XyJluGaH-__": 218888420,
         "_nice4ka_": 120133800,
         "XyJluGaH_banned2": 174812747,

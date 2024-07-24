@@ -1,10 +1,12 @@
 import os
-from supabase import create_client
+
+from supabase import create_client, ClientOptions
 
 
 class DbClient:
     def __init__(self):
-        self.client = create_client(os.environ['DB_URL'], os.environ['DB_KEY'])
+        self.client = create_client(os.environ['DB_URL'], os.environ['DB_KEY'],
+                                    ClientOptions(postgrest_client_timeout=999999, storage_client_timeout=999999))
 
     def get_table(self, table_name, select_filter="*"):
         return self.client.table(table_name).select(select_filter).execute().data
