@@ -21,6 +21,7 @@ count = 0
 # creator = "I_Kasper_I"
 user = User.retrieve_user_from_token(client.get_token())
 db_user = db_client.get_filter_table('users', 'rockstarId', user.get('nameId'))[0]
+db_controller = DbController(db_client)
 for creator in getCreatorsDict():
     # time.sleep(10)
     # if count >= 20:
@@ -38,7 +39,6 @@ for creator in getCreatorsDict():
     # else:
     #     print(f"An error occured while retriving the Rockstar ID of player {creator}.")
 
-    db_controller = DbController(db_client)
     # db_controller.add_user(db_user, user)
     db_controller.add_jobs_list(job_list, db_user)
 
