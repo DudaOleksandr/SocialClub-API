@@ -13,7 +13,7 @@ TOKEN_FILE = "Token.json"
 
 # Will only be useful for first login.
 # After that, the session will be saved and re-used at startup.
-CASTLE_TOKEN = "wMnxlLT2mbqy8ZeGuriyioOo95e6jZq6mfGyiLChkLWkjonCezeWP-OdiXx0JKzaKINKD79n-uQ6dCy0vmwxo70SWqnvQLu3usc0x5J_BLuBbXZDuygzyuCuluC6FaK1tzg9t8AAMNjyCEve0wtQmIpJAZeXMFjZ2whGxJ8pZZeOVx-HhEdm3tFRBYyfHweDlkdwx88LVODaBXrey0gEhIhJAoGfT3r_6yp9m58LWNzaR3bS3Axenp8kWcXQClSYjlUHmY9JAZmPR2LW2QZD3pBSAoCRVAfbt1YAhd5WA4aPEDKwNGelv9teCIWJV1KDIzBw-fgrdJeXKWf--y5wm58pZ_77LnCX-AJ32M0EVJftM2mXjFcGh58zWJeXV0mHj1cBhYtfA56fI1jF2gRFhPtWAJfJFG6C4FcRx8w4BOiPSxHzjCMAhpbDJYeOSQGGkVYIgI9LEYeMXQGHhVcBGLdnhJZ61jV8v7Qwai1D1rdUZMbqesyEP0DFWzu8Zz28-hJD2M8CHvzWAkejqBJam8oMHOL-S1TZkjJim9oJHdPaS0PCiuap4LtpVOfQbjG0MGo2tS74NBz9tncYCXZ8xQtlRNz_Z5G3v2cxt79nMbe_ZzG3v2cxt79niMUGFXG3_ycxt79ncff_J3H37Gdit-ksiA4E3GO3ejdhjb9nMbe_ZzC3QMg"
+CASTLE_TOKEN = "cXpyNQB55-vmjQYdaZUbD2yWjEGPNSbENgLmZVJAyJFFnntJkri-VsROQuRaHVxi-J2oMsrBPFEuGUPoU7cqqK7q1Lngnp7cOBx3QlvFw4w1nmLhkWHHUu63y7D_jGgg6bXIO73wOLU4JaD1uc05ZUSZqIwpQyZBIM8bFBmQ4UBtS_ysDVesdVWMl5kWAwC_Q0fIXk8itTxJ6jXq1NAY5vrPAqgC8MerwejoO_cWmGd6uDZ45XPLLj4Nez6FTE7daPN05qUXEg8dqCoXtOpaAtbXnCaeNA2Enu2LrydpvO_4W2VEHTrSzDSPDmFQzS9ZFRvsF_xSG6410gKj1C-RRQSePSLZc3RnYt0mq8T7sAw_VjxpxwJ8OwQErLhNl-OLSlbWblK1GHj5UvvKTIvVZIamJGm68O0gPic6yrWWpMcoj9UzOCblTKdbO2pZ2zFDyz3AE0BATiGr_JZ6SX8xQ26gaMKpTHaatdGM1Nny3Tt0-xcNTCYF0s7vowrjPzPuuhWzqNTqGo7mAqsyIjQLy8dniSJzWUxysclFOEZQsI4ZJpL4q_GRFk90PR8AqFFdgGEgaC13t38h5u2Z2OeQ0jGVZcuyML27C4jZK2RyE-lnBX2cxF5fbLEYembuDp6uzKPFGWjXfDMNN97QCF3VmZ6RylZR8YIissMIoS8hechf76ySbQyZvDT3zMrlMVX--r-xqISNUKt1UydZ3gHacwwXVtHc35zB-YCa6pzhRJoZpOe1VNo66MtkWAMrAZV0i78wpg4QrGZIrULl"
 
 
 class RockstarClient:
@@ -126,11 +126,12 @@ class RockstarClient:
             self.log("Token data file not found.")
 
     def get_token(self):
-        if self.is_token_expired():
-            self.refresh_token()
-            return self.bearer_token
-        else:
-            return self.bearer_token
+        # if self.is_token_expired():
+        #     self.refresh_token()
+        #     return self.bearer_token
+        # else:
+            #return self.bearer_token
+        return self.bearer_token
 
     def get_cookies_for_header(self):
         """
@@ -151,8 +152,9 @@ class RockstarClient:
             str: CSRF token if found, None otherwise.
         """
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Referer": "https://socialclub.rockstargames.com/"
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+            'Referer': 'https://socialclub.rockstargames.com/',
+            'Cookie': 'AutoLoginCheck=1; CSRFToken=WNETB690dOQ4Ft4CezBQo3-CvzI6RhHX6GxTCD9tBzvbEyVr_tJVCq009KfMm8KZN0NSU8yT6aChkOpqtGbuRdE3MW41; RockStarWebSessionId=3mjkqeguzjitquwu3m2yzzd0; TS01008f56=01e681cfdb87266c87953e180e3704b1aa335572dde05034f2bd7ee224da07b111fb6add141da89c3532327289f24743335bbe539ac88b941c3accc4ba2d8a505eb0b3445f5b24d9bf4f2fdd444e1eb7c4ce33c3cc; TS011be943=01e681cfdb9e016a0ebb6f100bd26ab98d1f14e723e05034f2bd7ee224da07b111fb6add14e0f763c41703427e03ea4c496a73599eb43aa2ac9d0eb5d63240d0e94265c60cd5f06879f816433317af6ea5cd2e211b63d3a39eba9304d9a438c8cfc777714fec2c7828389fbdff2363e224586d82b1; prod=rd101o00000000000000000000ffff0a5a2ac0o80'
         }
 
         response = self.session.get(CSRF_URL, headers=headers)
@@ -179,7 +181,7 @@ class RockstarClient:
             "Host": "signin.rockstargames.com",
             "Origin": "https://www.rockstargames.com",
             "Referer": "https://www.rockstargames.com/",
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
             "X-Requested-With": "XMLHttpRequest"
         }
 
@@ -199,7 +201,7 @@ class RockstarClient:
             "Cookie": self.get_cookies_for_header(),
             "Content-type": "application/json",
             "Referer": "https://www.rockstargames.com/",
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
         }
 
         final_request = self.session.get(url, headers=headers)
@@ -245,7 +247,7 @@ class RockstarClient:
         """
         headers = {
             "Accept": "*/*",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
             "Cookie": self.get_cookies_for_header(),
             "Origin": "https://signin.rockstargames.com",
             "Referer": "https://signin.rockstargames.com/signin/user-form?cid=rsg",
@@ -285,6 +287,15 @@ class RockstarClient:
             self.log(response.text)
             exit(1)
 
+    def wait_for_bearer_token(self):
+        print(f"Bearer token was expired or invalid. Waiting for new one: ")
+        new_bearer = input()
+        if len(new_bearer) > 1:
+            self.bearer_token = new_bearer
+            print("Token was updated")
+        else:
+            self.wait_for_bearer_token()
+
     def startup(self, force_renewing=False):
         """
         Initialize the client session by attempting to load session cookies and token data,
@@ -298,17 +309,18 @@ class RockstarClient:
         If no session data is found or `force_renewing` is True,
         attempt to fetch CSRF token and authenticate the client.
         """
-        if self.load_session(COOKIES_FILE) and not force_renewing:
-            self.log("Session loaded successfully")
-            self.load_token_data()
-        else:
-            self.log("No session cookies found, authenticating...")
-            csrf_token = self.fetch_csrf_token()
-            self.rvt = csrf_token
-            if not csrf_token:
-                self.log("Error: CSRF Token not found")
-                exit()
-            else:
-                self.log(f"CSRF Found : {csrf_token}")
-
-            self.authenticate()
+        self.wait_for_bearer_token()
+        # if self.load_session(COOKIES_FILE) and not force_renewing:
+        #     self.log("Session loaded successfully")
+        #     self.load_token_data()
+        # else:
+        #     self.log("No session cookies found, authenticating...")
+        #     csrf_token = self.fetch_csrf_token()
+        #     self.rvt = csrf_token
+        #     if not csrf_token:
+        #         self.log("Error: CSRF Token not found")
+        #         exit()
+        #     else:
+        #         self.log(f"CSRF Found : {csrf_token}")
+        #
+        #     self.authenticate()

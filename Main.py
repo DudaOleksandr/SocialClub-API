@@ -30,7 +30,7 @@ for creator in getCreatorsDict():
     # (rid, avatar_url), state = User.retrieve_rid(creator, client.get_token())
     # time.sleep(5)
 
-    job_list = Jobs.get_jobs_by_username(creator,client, client.get_token())
+    job_list = Jobs.get_jobs_by_username(creator, client, client.get_token())
     # if state == 1:
     #     print(f"RID of player {creator} is {rid}.\nAvatar URL : {avatar_url}")
     #     print(f"Jobs of player {creator} are {job_list}.")
