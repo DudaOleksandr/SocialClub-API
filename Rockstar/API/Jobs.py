@@ -41,24 +41,25 @@ def get_jobs_by_username(username, client, token, number_of_jobs=30):
     response = client.session.get(url, headers=headers)
     if response.status_code == 401:
         client.wait_for_bearer_token()
-        get_jobs_by_username(username, client, client.get_token(), number_of_jobs=30)
+        return get_jobs_by_username(username, client, client.get_token(), number_of_jobs=30)
+
 
     index = 1
     jobs_list = parseJobs(response.json())
     while response.json()['hasMore']:
-        response = get_response_with_access_check(url)
+        response = get_response_with_access_check(url, client)
         url = f'https://scapi.rockstargames.com/search/mission?dateRangeCreated=any&sort=likes&platform=pc&title=gtav&pageIndex={index}&creatorRockstarId={rid}&pageSize={number_of_jobs}'
 
         if response.status_code != 200:
             client.wait_for_bearer_token()
-            get_response_with_access_check(url)
-            response = get_response_with_access_check(url)
+            get_response_with_access_check(url, client)
+            response = get_response_with_access_check(url, client)
             jobs_list.extend(parseJobs(response.json()))
         else:
             jobs_list.extend(parseJobs(response.json()))
             index += 1
             if not response.json()['hasMore']:
-                response = get_response_with_access_check(url)
+                response = get_response_with_access_check(url, client)
                 jobs_list.extend(parseJobs(response.json()))
                 break
 
@@ -68,8 +69,7 @@ def get_jobs_by_username(username, client, token, number_of_jobs=30):
         return {"error": f"Error during the request: {response.status_code}"}
 
 
-def get_response_with_access_check(url):
-    from Main import client
+def get_response_with_access_check(url, client):
     headers = {
         'X-AMC': 'true',
         'Referer': 'https://socialclub.rockstargames.com/',
