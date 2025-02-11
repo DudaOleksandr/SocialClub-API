@@ -45,7 +45,7 @@ class DbController:
 
             is_db_user_job_added = db_user.get('id') in [j.get('userId') for j in db_user_job]
 
-            if not db_user_job and not is_db_user_job_added:
+            if not is_db_user_job_added:
                 db_user_job = self.db_client.insert_data('userJobs', {
                     'userId': db_user.get('id'),
                     'jobId': db_job.get('id'),
@@ -53,10 +53,13 @@ class DbController:
                     'played': job.get('played')
                 })
             else:
-                db_user_job = db_user_job[0]
+                db_user_job = next((uj for uj in db_user_job if uj.get('userId') == db_user.get('id')), None)
 
-                if db_job.get('bookmarked') != job.get('bookmarked') or db_job.get('played') != job.get('played'):
-                    db_user_job = self.db_client.update_data('userJobs', {
-                        'bookmarked': job.get('bookmarked'),
-                        'played': job.get('played')
-                    }, 'jobId', db_job.get('id'))
+                if db_user_job and (db_user_job.get('bookmarked') != job.get('bookmarked')
+                                    or db_user_job.get('played') != job.get('played')):
+                    self.db_client.update_data(
+                        'userJobs',
+                        {'bookmarked': job.get('bookmarked'), 'played': job.get('played')},
+                        {'jobId': db_job.get('id'), 'userId': db_user.get('id')}
+                    )
+
