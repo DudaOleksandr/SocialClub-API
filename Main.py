@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from dotenv import load_dotenv
@@ -14,33 +15,39 @@ EMAIL = os.environ['EMAIL']
 PASSWORD = os.environ['PASSWORD']
 SILENT = bool(int(os.environ['SILENT']))
 
-client = RockstarClient(EMAIL, PASSWORD, SILENT)
-client.startup(force_renewing=False)
-db_client = DbClient()
-count = 0
-# creator = "I_Kasper_I"
-user = User.retrieve_user_from_token(client.get_token())
-db_user = db_client.get_filter_table('users', 'rockstarId', user.get('nameId'))[0]
-db_controller = DbController(db_client)
-for creator in getCreatorsDict():
-    # time.sleep(10)
-    # if count >= 20:
+async def main():
 
-    # print(creator)
-    # time.sleep(5)
-    # (rid, avatar_url), state = User.retrieve_rid(creator, client.get_token())
-    # time.sleep(5)
 
-    job_list = Jobs.get_jobs_by_username(creator, client, client.get_token(), db_client)
-    # if state == 1:
-    #     print(f"RID of player {creator} is {rid}.\nAvatar URL : {avatar_url}")
-    #     print(f"Jobs of player {creator} are {job_list}.")
-    #     print(f"Current user is: {user}.")
-    # else:
-    #     print(f"An error occured while retriving the Rockstar ID of player {creator}.")
+    client = RockstarClient(EMAIL, PASSWORD, SILENT)
+    client.startup(force_renewing=False)
+    db_client = DbClient()
+    count = 0
+    # creator = "I_Kasper_I"
+    user = User.retrieve_user_from_token(client.get_token())
+    db_user = db_client.get_filter_table('users', 'rockstarId', user.get('nameId'))[0]
+    db_controller = DbController(db_client)
+    for creator in getCreatorsDict():
+        # time.sleep(10)
+        # if count >= 20:
 
-    # db_controller.add_user(db_user, user)
-    #db_controller.add_jobs_list(job_list, db_user)
+        # print(creator)
+        # time.sleep(5)
+        # (rid, avatar_url), state = User.retrieve_rid(creator, client.get_token())
+        # time.sleep(5)
 
-# response = db.table("jobs").insert(job_list).execute()
-# print(response)
+        job_list = await Jobs.get_jobs_by_username(creator, client, client.get_token(), db_client)
+        # if state == 1:
+        #     print(f"RID of player {creator} is {rid}.\nAvatar URL : {avatar_url}")
+        #     print(f"Jobs of player {creator} are {job_list}.")
+        #     print(f"Current user is: {user}.")
+        # else:
+        #     print(f"An error occured while retriving the Rockstar ID of player {creator}.")
+
+        # db_controller.add_user(db_user, user)
+        # db_controller.add_jobs_list(job_list, db_user)
+
+    # response = db.table("jobs").insert(job_list).execute()
+    # print(response)
+
+
+asyncio.run(main())

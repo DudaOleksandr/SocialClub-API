@@ -1,3 +1,17 @@
+import asyncio
+from functools import wraps, partial
+
+
+def async_wrapper(func):
+    @wraps(func)
+    async def run(*args, loop=None, executor=None, **kwargs):
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        pfunc = partial(func, *args, **kwargs)
+        return await loop.run_in_executor(executor, pfunc)
+    return run
+
+
 class DbController:
 
     def __init__(self, db_client):
@@ -16,14 +30,23 @@ class DbController:
     # str has no attribute get and / or
     # Server disconnected without response
 
+    @async_wrapper
     def add_jobs_list(self, job_list, db_user):
+        print(f"\nAdding jobs for user {db_user.get('rockstarName')}\n")
+
+        job_ids = [job.get('jobId') for job in job_list]
+        existing_jobs = {job['jobId']: job for job in self.db_client.get_filter_table('jobs', 'jobId', job_ids)}
+
+        jobs_to_insert = []
+        jobs_to_update = []
+        user_jobs_to_insert = []
+        user_jobs_to_update = []
+
         for job in job_list:
-            # print(job)
-            db_job = self.db_client.get_filter_table('jobs', 'jobId', job.get('jobId'))
+            db_job = existing_jobs.get(job.get('jobId'))
 
             if not db_job:
-
-                db_job = self.db_client.insert_data('jobs', {
+                jobs_to_insert.append({
                     'jobId': job.get('jobId'),
                     'name': job.get('name'),
                     'desc': job.get('desc'),
@@ -32,34 +55,62 @@ class DbController:
                     'type': job.get('type'),
                     'authorId': job.get('authorId'),
                     'imgSrc': job.get('imgSrc')
-                })[0]
-            else:
-                db_job = db_job[0]
+                })
+            elif db_job.get('percentage') != job.get('percentage'):
+                jobs_to_update.append({
+                    'jobId': job.get('jobId'),
+                    'percentage': job.get('percentage')
+                })
 
-                if db_job.get('percentage') != job.get('percentage'):
-                    db_job = self.db_client.update_data('jobs', {
-                        'percentage': job.get('percentage')
-                    }, 'jobId', job.get('jobId'))[0]
+        if jobs_to_insert:
+            print(f"Inserting {len(jobs_to_insert)} jobs")
+            inserted_jobs = self.db_client.insert_data('jobs', jobs_to_insert)
+            for job in inserted_jobs:
+                existing_jobs[job['jobId']] = job
 
-            db_user_job = self.db_client.get_filter_table('userJobs', 'jobId', db_job.get('id'))
+        if jobs_to_update:
+            print(f"Updating {len(jobs_to_update)} jobs")
+            job_ids_to_update = [job['jobId'] for job in jobs_to_update]
+            update_fields = {k: v for job in jobs_to_update for k, v in job.items() if k != 'jobId'}
+            self.db_client.update_data('jobs', update_fields, 'jobId', job_ids_to_update)
 
-            is_db_user_job_added = db_user.get('id') in [j.get('userId') for j in db_user_job]
+        job_ids = [job['id'] for job in existing_jobs.values()]
+        existing_user_jobs = {
+            (uj['userId'], uj['jobId']): uj
+            for uj in self.db_client.get_filter_table('userJobs', 'jobId', job_ids)
+        }
 
-            if not is_db_user_job_added:
-                db_user_job = self.db_client.insert_data('userJobs', {
+        for job in job_list:
+            db_job = existing_jobs[job.get('jobId')]
+            key = (db_user.get('id'), db_job.get('id'))
+
+            if key not in existing_user_jobs:
+                user_jobs_to_insert.append({
                     'userId': db_user.get('id'),
                     'jobId': db_job.get('id'),
                     'bookmarked': job.get('bookmarked'),
                     'played': job.get('played')
                 })
             else:
-                db_user_job = next((uj for uj in db_user_job if uj.get('userId') == db_user.get('id')), None)
+                db_user_job = existing_user_jobs[key]
+                if db_user_job.get('bookmarked') != job.get('bookmarked') or db_user_job.get('played') != job.get(
+                        'played'):
+                    user_jobs_to_update.append({
+                        'userId': db_user.get('id'),
+                        'jobId': db_job.get('id'),
+                        'bookmarked': job.get('bookmarked'),
+                        'played': job.get('played')
+                    })
 
-                if db_user_job and (db_user_job.get('bookmarked') != job.get('bookmarked')
-                                    or db_user_job.get('played') != job.get('played')):
-                    self.db_client.update_data(
-                        'userJobs',
-                        {'bookmarked': job.get('bookmarked'), 'played': job.get('played')},
-                        {'jobId': db_job.get('id'), 'userId': db_user.get('id')}
-                    )
+        if user_jobs_to_insert:
+            print(f"Inserting {len(jobs_to_insert)} userJobs")
+            self.db_client.insert_data('userJobs', user_jobs_to_insert)
+
+        if user_jobs_to_update:
+            print(f"Updating {len(jobs_to_update)} jobs")
+            for job in user_jobs_to_update:
+                self.db_client.update_data('userJobs', job, ['userId', 'jobId'], [(job['userId'], job['jobId'])])
+
+        print(f"\nFinished with database updates")
+
 

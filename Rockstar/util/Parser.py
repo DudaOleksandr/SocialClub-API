@@ -3,7 +3,7 @@ import json
 from Rockstar.model.Job import Job
 
 
-def parseJobs(jsonResponse):
+def parse_jobs(jsonResponse, debug_mode = False):
     jobs_list = []
     for item in jsonResponse['content']['items']:
         job_details = Job()
@@ -22,5 +22,6 @@ def parseJobs(jsonResponse):
         job_details.imgSrc = item['imgSrc']
 
         jobs_list.append(json.loads(json.dumps(job_details.__dict__)))
-        print(job_details.__dict__)
+        if debug_mode:
+            print(job_details.__dict__)
     return jobs_list
