@@ -13,7 +13,7 @@ def retrieve_rid(username, token):
     Returns:
         tuple: Tuple containing (rid, avatar_url) if successful, ("RID not found", "") if RID is not found,
                or (error_message, "") if an error occurs during the request.
-        int: 1 if RID and avatar URL are found, 0 otherwise.
+        bool: true if RID and avatar URL are found, false otherwise.
     """
 
     headers = {
@@ -43,11 +43,11 @@ def retrieve_rid(username, token):
         if data["status"] and "accounts" in data and len(data["accounts"]) > 0:
             rid = data["accounts"][0]["rockstarAccount"]["rockstarId"]
             avatar_url = data["accounts"][0]["rockstarAccount"]["avatarUrl"]
-            return (rid, avatar_url), 1
+            return (rid, avatar_url), True
         else:
-            return ("RID not found", ""), 0
+            return ("RID not found", ""), False
     else:
-        return (f"Error during the request: {response.status_code}", ""), 0
+        return (f"Error during the request: {response.status_code}", ""), False
 
 
 def retrieve_user_from_token(token):

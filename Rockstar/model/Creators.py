@@ -1,11 +1,11 @@
 def getCreatorsDict():
     return {
-        # "O_D_I_U_M": 157779789,
-        # "Kurwocka": 151495385,
+         #"O_D_I_U_M": 157779789,
+         #"Kurwocka": 151495385,
          "__-XyJluGaH-__": 218888420,
-         #"_nice4ka_": 120133800,
-         #"XyJluGaH_banned2": 174812747,
-        #"I_Kasper_I": 106510446,
+         "_nice4ka_": 120133800,
+         "XyJluGaH_banned2": 174812747,
+         "I_Kasper_I": 106510446,
         # "kovalski84": 10157262,
         # "Gazastreifen": 135324404,
         # "matheuxzs": 187329435,
